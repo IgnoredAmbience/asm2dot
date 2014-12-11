@@ -17,9 +17,20 @@ import parser.ArmAsmParser.ProgrContext;
 public class Arm2DotVisitor extends ArmAsmBaseVisitor<Void> {
 	private String prevNode;
 	private int counter = 0;
+	private StringBuilder instrs = new StringBuilder(); 
 	
 	private String genLabel() {
 		return "node" + counter++;
+	}
+	
+	private void outputInstrs() {
+		if(instrs.length() != 0) {
+			String label = genLabel();
+			outputNode(label, instrs.toString(), "");
+			outputEdge(label);
+			prevNode = label;
+			instrs = new StringBuilder();
+		}
 	}
 	
 	private void outputNode(String id, String label, String attrs) {
@@ -46,6 +57,7 @@ public class Arm2DotVisitor extends ArmAsmBaseVisitor<Void> {
 
 	@Override
 	public Void visitLabel(LabelContext ctx) {
+		outputInstrs();
 		String label = ctx.ID().getText();
 		outputNode(label, ctx.getText(), "shape=box");
 		outputEdge(label);
@@ -55,6 +67,7 @@ public class Arm2DotVisitor extends ArmAsmBaseVisitor<Void> {
 	
 	@Override
 	public Void visitInstrBranch(InstrBranchContext ctx) {
+		outputInstrs();
 		String id = genLabel();
 		outputNode(id, ctx.getText(), "shape=diamond");
 		outputEdge(id);
@@ -66,10 +79,7 @@ public class Arm2DotVisitor extends ArmAsmBaseVisitor<Void> {
 
 	@Override
 	public Void visitInstrOther(InstrOtherContext ctx) {
-		String label = genLabel();
-		outputNode(label, ctx.getText(), "");
-		outputEdge(label);
-		prevNode = label;
+		instrs.append(ctx.getText() + "\\n");
 		return null;
 	}
 	
