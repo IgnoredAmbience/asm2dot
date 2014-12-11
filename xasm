@@ -1,0 +1,2 @@
+#!/bin/sh
+java -jar ~/bin/asm2dot.jar $1 | xdot
